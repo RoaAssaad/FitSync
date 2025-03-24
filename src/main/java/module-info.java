@@ -10,6 +10,8 @@ module com.example.fitsync {
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
+    requires java.desktop;
+    requires java.sql;
 
     opens com.example.fitsync to javafx.fxml;
     exports com.example.fitsync;
