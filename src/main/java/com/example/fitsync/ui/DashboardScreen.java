@@ -1,6 +1,11 @@
 package com.example.fitsync.ui;
 
 import com.example.fitsync.model.User;
+import com.example.fitsync.ui.LogMealScreen;
+import com.example.fitsync.ui.DailySummaryScreen;
+import com.example.fitsync.ui.ViewMealsScreen;
+import com.example.fitsync.ui.UserProfileScreen;
+import com.example.fitsync.ui.WeeklyProgressScreen;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -29,18 +34,39 @@ public class DashboardScreen {
         });
 
         mealButton.setOnAction(e -> {
-            // Navigate to meal screen
+            new LogMealScreen(user).start(stage);
         });
 
         summaryButton.setOnAction(e -> {
-            // Navigate to summary screen
+            new DailySummaryScreen(user).start(stage);
         });
+
+        Button progressButton = new Button("Weekly Progress");
+        progressButton.setOnAction(e -> {
+            new WeeklyProgressScreen(user).start(stage);
+        });
+
+
+        Button profileButton = new Button("View / Edit Profile");
+        profileButton.setOnAction(e -> {
+            new UserProfileScreen(user).start(stage);
+        });
+
+        Button viewMealsButton = new Button("View Logged Meals");
+        viewMealsButton.setOnAction(e -> {
+            new ViewMealsScreen(user).start(stage);
+        });
+
 
         logoutButton.setOnAction(e -> {
             new LoginScreen().start(stage); // Go back to login screen
         });
 
-        VBox layout = new VBox(10, greeting, workoutButton, mealButton, summaryButton, logoutButton);
+        VBox layout = new VBox(10, greeting,
+                workoutButton, mealButton, summaryButton,
+                viewMealsButton, profileButton, progressButton,
+                logoutButton);
+
         layout.setPadding(new Insets(20));
 
         Scene scene = new Scene(layout, 300, 250);
