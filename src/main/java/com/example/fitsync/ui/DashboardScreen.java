@@ -1,11 +1,16 @@
 package com.example.fitsync.ui;
 
 import com.example.fitsync.model.User;
+import com.example.fitsync.ui.WorkoutRecommendationsScreen;
 import com.example.fitsync.ui.LogMealScreen;
 import com.example.fitsync.ui.DailySummaryScreen;
 import com.example.fitsync.ui.ViewMealsScreen;
 import com.example.fitsync.ui.UserProfileScreen;
 import com.example.fitsync.ui.WeeklyProgressScreen;
+import com.example.fitsync.ui.TodayDashboardScreen;
+import com.example.fitsync.ui.GoalScreen;
+import com.example.fitsync.ui.LogWeightScreen;
+import com.example.fitsync.ui.WeightChartScreen;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -37,8 +42,32 @@ public class DashboardScreen {
             new LogMealScreen(user).start(stage);
         });
 
+        Button logWeightButton = new Button("Log Weight");
+        logWeightButton.setOnAction(e -> new LogWeightScreen(user).start(stage));
+
+        Button viewWeightChartButton = new Button("View Weight Chart");
+        viewWeightChartButton.setOnAction(e -> new WeightChartScreen(user).start(stage));
+
+
         summaryButton.setOnAction(e -> {
             new DailySummaryScreen(user).start(stage);
+        });
+
+        Button goalButton = new Button("Set Daily Goals");
+        goalButton.setOnAction(e -> {
+            new GoalScreen(user).start(stage);
+        });
+
+
+        Button recommendButton = new Button("Workout Recommendations");
+        recommendButton.setOnAction(e -> {
+            new WorkoutRecommendationsScreen(user).start(stage);
+        });
+
+
+        Button todayButton = new Button("Today's Summary");
+        todayButton.setOnAction(e -> {
+            new TodayDashboardScreen(user).start(stage);
         });
 
         Button progressButton = new Button("Weekly Progress");
@@ -64,8 +93,14 @@ public class DashboardScreen {
 
         VBox layout = new VBox(10, greeting,
                 workoutButton, mealButton, summaryButton,
-                viewMealsButton, profileButton, progressButton,
+                viewMealsButton, todayButton, profileButton,
+                progressButton, recommendButton, goalButton,
+                logWeightButton, viewWeightChartButton,
                 logoutButton);
+
+
+
+
 
         layout.setPadding(new Insets(20));
 
