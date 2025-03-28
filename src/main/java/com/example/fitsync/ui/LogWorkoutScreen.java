@@ -5,9 +5,13 @@ import com.example.fitsync.model.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 import java.sql.*;
@@ -22,14 +26,33 @@ public class LogWorkoutScreen {
 
     public void start(Stage stage) {
         Label title = new Label("Log a Workout");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 22));
+        title.setTextFill(Color.web("#2C3E50"));
 
         ComboBox<String> workoutDropdown = new ComboBox<>();
-        DatePicker datePicker = new DatePicker(LocalDate.now());
-        Button logButton = new Button("Log Workout");
-        Button backButton = new Button("Back");
-        Label messageLabel = new Label();
+        workoutDropdown.setPromptText("Select Workout");
+        workoutDropdown.setPrefHeight(40);
+        workoutDropdown.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
 
-        //  Load available workouts from DB
+        DatePicker datePicker = new DatePicker(LocalDate.now());
+        datePicker.setPrefHeight(40);
+        datePicker.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+
+        Button logButton = new Button("Log Workout");
+        logButton.setPrefWidth(140);
+        logButton.setPrefHeight(35);
+        logButton.setStyle("-fx-background-color: #2ECC71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
+
+        Button backButton = new Button("Back");
+        backButton.setPrefWidth(140);
+        backButton.setPrefHeight(35);
+        backButton.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
+
+        Label messageLabel = new Label();
+        messageLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
+        messageLabel.setTextFill(Color.web("#E74C3C"));
+
+        // Load workouts
         ObservableList<String> workoutNames = FXCollections.observableArrayList();
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
@@ -41,17 +64,10 @@ public class LogWorkoutScreen {
             e.printStackTrace();
         }
         workoutDropdown.setItems(workoutNames);
-        workoutDropdown.setPromptText("Select Workout");
 
-        // Log Workout Button Action (with debug + LIMIT 1 in SQL)
         logButton.setOnAction(e -> {
             String selectedWorkout = workoutDropdown.getValue();
             LocalDate selectedDate = datePicker.getValue();
-
-            // Debug prints
-            System.out.println("Selected workout: " + selectedWorkout);
-            System.out.println("Selected date: " + selectedDate);
-            System.out.println("User ID: " + user.getId());
 
             if (selectedWorkout != null && selectedDate != null) {
                 try (Connection conn = DatabaseConnection.getConnection();
@@ -65,30 +81,28 @@ public class LogWorkoutScreen {
 
                     int rows = stmt.executeUpdate();
                     if (rows > 0) {
-                        messageLabel.setText(" Workout logged successfully!");
-                        System.out.println("Workout logged to DB.");
+                        messageLabel.setTextFill(Color.web("#27AE60")); // success green
+                        messageLabel.setText("Workout logged successfully!");
                     } else {
                         messageLabel.setText("⚠ Failed to log workout.");
-                        System.out.println("No rows inserted.");
                     }
                 } catch (SQLException ex) {
                     ex.printStackTrace();
-                    messageLabel.setText(" Database error.");
+                    messageLabel.setText("Database error.");
                 }
             } else {
                 messageLabel.setText("Please select a workout and date.");
             }
         });
 
-        //  Back to Dashboard
-        backButton.setOnAction(e -> {
-            new DashboardScreen(user).start(stage);
-        });
+        backButton.setOnAction(e -> new DashboardScreen(user).start(stage));
 
-        VBox layout = new VBox(10, title, workoutDropdown, datePicker, logButton, backButton, messageLabel);
-        layout.setPadding(new Insets(20));
+        VBox layout = new VBox(12, title, workoutDropdown, datePicker, logButton, backButton, messageLabel);
+        layout.setPadding(new Insets(25));
+        layout.setAlignment(Pos.CENTER);
+        layout.setStyle("-fx-background-color: #FDFEFE;");
 
-        Scene scene = new Scene(layout, 350, 300);
+        Scene scene = new Scene(layout, 400, 330);
         stage.setTitle("Log Workout");
         stage.setScene(scene);
         stage.show();

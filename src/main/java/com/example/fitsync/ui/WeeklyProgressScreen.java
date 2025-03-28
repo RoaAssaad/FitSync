@@ -3,10 +3,14 @@ package com.example.fitsync.ui;
 import com.example.fitsync.database.DatabaseConnection;
 import com.example.fitsync.model.User;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.chart.*;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 import java.sql.*;
@@ -27,6 +31,10 @@ public class WeeklyProgressScreen {
 
         BarChart<String, Number> barChart = new BarChart<>(xAxis, yAxis);
         barChart.setTitle("Weekly Calorie Summary");
+        barChart.setLegendVisible(true);
+        barChart.setCategoryGap(10);
+        barChart.setBarGap(4);
+        barChart.setStyle("-fx-background-color: #FDFEFE;");
 
         XYChart.Series<String, Number> consumedSeries = new XYChart.Series<>();
         consumedSeries.setName("Calories Consumed");
@@ -35,7 +43,7 @@ public class WeeklyProgressScreen {
         burnedSeries.setName("Calories Burned");
 
         LocalDate today = LocalDate.now();
-        LocalDate weekAgo = today.minusDays(6); // last 7 days total
+        LocalDate weekAgo = today.minusDays(6); // Last 7 days
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
@@ -62,12 +70,17 @@ public class WeeklyProgressScreen {
         barChart.getData().addAll(consumedSeries, burnedSeries);
 
         Button backButton = new Button("Back");
+        backButton.setPrefWidth(140);
+        backButton.setPrefHeight(35);
+        backButton.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
         backButton.setOnAction(e -> new DashboardScreen(user).start(stage));
 
-        VBox layout = new VBox(10, barChart, backButton);
-        layout.setPadding(new Insets(20));
+        VBox layout = new VBox(15, barChart, backButton);
+        layout.setPadding(new Insets(25));
+        layout.setAlignment(Pos.CENTER);
+        layout.setStyle("-fx-background-color: #FDFEFE;");
 
-        Scene scene = new Scene(layout, 600, 400);
+        Scene scene = new Scene(layout, 640, 450);
         stage.setTitle("Weekly Progress");
         stage.setScene(scene);
         stage.show();

@@ -3,30 +3,42 @@ package com.example.fitsync.ui;
 import com.example.fitsync.model.User;
 import com.example.fitsync.service.UserService;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 public class LoginScreen {
 
     public void start(Stage stage) {
         Label title = new Label("FitSync - Login");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        title.setTextFill(Color.web("#2C3E50"));
 
         TextField emailField = new TextField();
         emailField.setPromptText("Email");
+        emailField.setPrefHeight(40);
+        emailField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
 
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Password");
+        passwordField.setPrefHeight(40);
+        passwordField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
 
         TextField visiblePasswordField = new TextField();
         visiblePasswordField.setPromptText("Password");
         visiblePasswordField.setManaged(false);
         visiblePasswordField.setVisible(false);
+        visiblePasswordField.setPrefHeight(40);
+        visiblePasswordField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
 
         CheckBox showPasswordCheckBox = new CheckBox("Show Password");
+        showPasswordCheckBox.setTextFill(Color.web("#34495E"));
 
-        // Toggle password visibility
         showPasswordCheckBox.setOnAction(e -> {
             if (showPasswordCheckBox.isSelected()) {
                 visiblePasswordField.setText(passwordField.getText());
@@ -44,8 +56,17 @@ public class LoginScreen {
         });
 
         Button loginButton = new Button("Login");
+        loginButton.setPrefWidth(120);
+        loginButton.setPrefHeight(35);
+        loginButton.setStyle("-fx-background-color: #2ECC71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
+
         Button registerButton = new Button("Register");
+        registerButton.setPrefWidth(120);
+        registerButton.setPrefHeight(35);
+        registerButton.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
+
         Label messageLabel = new Label();
+        messageLabel.setStyle("-fx-text-fill: red;");
 
         loginButton.setOnAction(e -> {
             String email = emailField.getText().trim();
@@ -67,7 +88,7 @@ public class LoginScreen {
             new RegisterScreen().start(stage);
         });
 
-        VBox layout = new VBox(10,
+        VBox layout = new VBox(12,
                 title,
                 emailField,
                 passwordField,
@@ -77,9 +98,11 @@ public class LoginScreen {
                 registerButton,
                 messageLabel
         );
-        layout.setPadding(new Insets(20));
+        layout.setPadding(new Insets(25));
+        layout.setAlignment(Pos.CENTER);
+        layout.setStyle("-fx-background-color: #FDFEFE;");
 
-        Scene scene = new Scene(layout, 300, 280);
+        Scene scene = new Scene(layout, 380, 360);
         stage.setTitle("FitSync - Login");
         stage.setScene(scene);
         stage.show();
