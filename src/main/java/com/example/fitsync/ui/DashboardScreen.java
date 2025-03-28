@@ -1,21 +1,10 @@
 package com.example.fitsync.ui;
 
 import com.example.fitsync.model.User;
-import com.example.fitsync.ui.WorkoutRecommendationsScreen;
-import com.example.fitsync.ui.LogMealScreen;
-import com.example.fitsync.ui.DailySummaryScreen;
-import com.example.fitsync.ui.ViewMealsScreen;
-import com.example.fitsync.ui.UserProfileScreen;
-import com.example.fitsync.ui.WeeklyProgressScreen;
-import com.example.fitsync.ui.TodayDashboardScreen;
-import com.example.fitsync.ui.GoalScreen;
-import com.example.fitsync.ui.LogWeightScreen;
-import com.example.fitsync.ui.WeightChartScreen;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 public class DashboardScreen {
@@ -28,85 +17,84 @@ public class DashboardScreen {
     public void start(Stage stage) {
         Label greeting = new Label("Welcome, " + user.getName() + "!");
 
-        Button workoutButton = new Button("Log Workout");
-        Button mealButton = new Button("Log Meal");
-        Button summaryButton = new Button("View Daily Summary");
-        Button logoutButton = new Button("Logout");
+        // Section buttons
+        ToggleGroup sectionGroup = new ToggleGroup();
+        RadioButton mealsRadio = new RadioButton("Meals");
+        RadioButton workoutsRadio = new RadioButton("Workouts");
+        RadioButton progressRadio = new RadioButton("Progress");
 
-        // TODO: Add actions to each button
-        workoutButton.setOnAction(e -> {
-            new LogWorkoutScreen(user).start(stage);  //  this triggers the screen change
-        });
+        mealsRadio.setToggleGroup(sectionGroup);
+        workoutsRadio.setToggleGroup(sectionGroup);
+        progressRadio.setToggleGroup(sectionGroup);
+        mealsRadio.setSelected(true);
 
-        mealButton.setOnAction(e -> {
-            new LogMealScreen(user).start(stage);
-        });
+        // Section container
+        VBox sectionButtonsBox = new VBox(10);
+        sectionButtonsBox.setPadding(new Insets(10));
 
-        Button logWeightButton = new Button("Log Weight");
-        logWeightButton.setOnAction(e -> new LogWeightScreen(user).start(stage));
+        // Update section buttons
+        Runnable showMeals = () -> {
+            sectionButtonsBox.getChildren().setAll(
+                    createButton("Log Meal", () -> new LogMealScreen(user).start(stage)),
+                    createButton("View Logged Meals", () -> new ViewMealsScreen(user).start(stage))
+            );
+        };
 
-        Button viewWeightChartButton = new Button("View Weight Chart");
-        viewWeightChartButton.setOnAction(e -> new WeightChartScreen(user).start(stage));
+        Runnable showWorkouts = () -> {
+            sectionButtonsBox.getChildren().setAll(
+                    createButton("Log Workout", () -> new LogWorkoutScreen(user).start(stage)),
+                    createButton("Workout Recommendations", () -> new WorkoutRecommendationsScreen(user).start(stage))
+            );
+        };
 
+        Runnable showProgress = () -> {
+            sectionButtonsBox.getChildren().setAll(
+                    createButton("View Daily Summary", () -> new DailySummaryScreen(user).start(stage)),
+                    createButton("Today's Summary", () -> new TodayDashboardScreen(user).start(stage)),
+                    createButton("Log Weight", () -> new LogWeightScreen(user).start(stage)),
+                    createButton("View Weight Chart", () -> new WeightChartScreen(user).start(stage)),
+                    createButton("Weekly Progress", () -> new WeeklyProgressScreen(user).start(stage)),
+                    createButton("Set Daily Goals", () -> new GoalScreen(user).start(stage)),
+                    createButton("View/Edit Profile", () -> new UserProfileScreen(user).start(stage))
+            );
+        };
 
-        summaryButton.setOnAction(e -> {
-            new DailySummaryScreen(user).start(stage);
-        });
+        // Initial section load
+        showMeals.run();
 
-        Button goalButton = new Button("Set Daily Goals");
-        goalButton.setOnAction(e -> {
-            new GoalScreen(user).start(stage);
-        });
+        // Ensure updates even if same radio clicked again
+        mealsRadio.setOnMouseClicked(e -> showMeals.run());
+        workoutsRadio.setOnMouseClicked(e -> showWorkouts.run());
+        progressRadio.setOnMouseClicked(e -> showProgress.run());
 
+        // Logout button
+        Button logoutBtn = new Button("Logout");
+        logoutBtn.setOnAction(e -> new LoginScreen().start(stage));
 
-        Button recommendButton = new Button("Workout Recommendations");
-        recommendButton.setOnAction(e -> {
-            new WorkoutRecommendationsScreen(user).start(stage);
-        });
+        // Top panel
+        VBox topPanel = new VBox(10, greeting,
+                new Label("Choose Section:"),
+                new HBox(10, mealsRadio, workoutsRadio, progressRadio),
+                new Separator()
+        );
+        topPanel.setPadding(new Insets(10));
 
+        // Layout using BorderPane for cleaner structure
+        BorderPane layout = new BorderPane();
+        layout.setTop(topPanel);
+        layout.setCenter(sectionButtonsBox);
+        layout.setBottom(logoutBtn);
+        BorderPane.setMargin(logoutBtn, new Insets(10));
 
-        Button todayButton = new Button("Today's Summary");
-        todayButton.setOnAction(e -> {
-            new TodayDashboardScreen(user).start(stage);
-        });
-
-        Button progressButton = new Button("Weekly Progress");
-        progressButton.setOnAction(e -> {
-            new WeeklyProgressScreen(user).start(stage);
-        });
-
-
-        Button profileButton = new Button("View / Edit Profile");
-        profileButton.setOnAction(e -> {
-            new UserProfileScreen(user).start(stage);
-        });
-
-        Button viewMealsButton = new Button("View Logged Meals");
-        viewMealsButton.setOnAction(e -> {
-            new ViewMealsScreen(user).start(stage);
-        });
-
-
-        logoutButton.setOnAction(e -> {
-            new LoginScreen().start(stage); // Go back to login screen
-        });
-
-        VBox layout = new VBox(10, greeting,
-                workoutButton, mealButton, summaryButton,
-                viewMealsButton, todayButton, profileButton,
-                progressButton, recommendButton, goalButton,
-                logWeightButton, viewWeightChartButton,
-                logoutButton);
-
-
-
-
-
-        layout.setPadding(new Insets(20));
-
-        Scene scene = new Scene(layout, 300, 250);
+        Scene scene = new Scene(layout, 400, 500);
         stage.setTitle("FitSync - Dashboard");
         stage.setScene(scene);
         stage.show();
+    }
+
+    private Button createButton(String label, Runnable action) {
+        Button btn = new Button(label);
+        btn.setOnAction(e -> action.run());
+        return btn;
     }
 }
