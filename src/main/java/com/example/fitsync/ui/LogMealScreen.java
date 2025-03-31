@@ -34,6 +34,20 @@ public class LogMealScreen {
         mealDropdown.setPrefHeight(40);
         mealDropdown.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
 
+        TextField customMealField = new TextField();
+        customMealField.setPromptText("Or enter custom meal name");
+        customMealField.setPrefHeight(40);
+        customMealField.setStyle("-fx-background-color: #FBFCFC; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+
+        TextField caloriesField = new TextField();
+        caloriesField.setPromptText("Calories");
+        caloriesField.setPrefHeight(40);
+
+        ComboBox<String> mealTypeBox = new ComboBox<>();
+        mealTypeBox.setPromptText("Meal Type");
+        mealTypeBox.setItems(FXCollections.observableArrayList("Breakfast", "Lunch", "Dinner", "Snack"));
+        mealTypeBox.setPrefHeight(40);
+
         DatePicker datePicker = new DatePicker(LocalDate.now());
         datePicker.setPrefHeight(40);
         datePicker.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
@@ -65,48 +79,90 @@ public class LogMealScreen {
         }
         mealDropdown.setItems(mealNames);
 
-        // Log Meal
         logButton.setOnAction(e -> {
             String selectedMeal = mealDropdown.getValue();
+            String customMeal = customMealField.getText().trim();
+            String mealType = mealTypeBox.getValue();
+            String caloriesText = caloriesField.getText().trim();
             LocalDate selectedDate = datePicker.getValue();
 
-            if (selectedMeal != null && selectedDate != null) {
-                try (Connection conn = DatabaseConnection.getConnection();
-                     PreparedStatement stmt = conn.prepareStatement(
-                             "INSERT INTO User_Meals (user_id, meal_id, meal_date) " +
-                                     "VALUES (?, (SELECT id FROM Meals WHERE food_name = ? LIMIT 1), ?)")) {
+            if ((selectedMeal == null && customMeal.isEmpty()) || selectedDate == null) {
+                messageLabel.setText("Please select or enter a meal and date.");
+                return;
+            }
 
-                    stmt.setInt(1, user.getId());
-                    stmt.setString(2, selectedMeal);
-                    stmt.setDate(3, Date.valueOf(selectedDate));
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                int mealId;
 
-                    int rows = stmt.executeUpdate();
-                    if (rows > 0) {
-                        messageLabel.setTextFill(Color.web("#27AE60")); // green
-                        messageLabel.setText("Meal logged successfully!");
-                    } else {
-                        messageLabel.setTextFill(Color.web("#E74C3C")); // red
-                        messageLabel.setText("Failed to log meal.");
+                if (!customMeal.isEmpty()) {
+                    if (caloriesText.isEmpty() || mealType == null) {
+                        messageLabel.setText("Enter calories and meal type for custom meals.");
+                        return;
                     }
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    messageLabel.setText("Database error.");
+
+                    double calories = Double.parseDouble(caloriesText);
+
+                    // Insert custom meal if not exists
+                    PreparedStatement insertMeal = conn.prepareStatement(
+                            "INSERT IGNORE INTO Meals (food_name, calories, meal_type) VALUES (?, ?, ?)"
+                    );
+                    insertMeal.setString(1, customMeal);
+                    insertMeal.setDouble(2, calories);
+                    insertMeal.setString(3, mealType);
+                    insertMeal.executeUpdate();
+
+                    PreparedStatement getId = conn.prepareStatement("SELECT id FROM Meals WHERE food_name = ?");
+                    getId.setString(1, customMeal);
+                    ResultSet rs = getId.executeQuery();
+                    if (rs.next()) {
+                        mealId = rs.getInt("id");
+                        if (!mealNames.contains(customMeal)) mealNames.add(customMeal);
+                    } else {
+                        messageLabel.setText("Failed to retrieve meal ID.");
+                        return;
+                    }
+                } else {
+                    PreparedStatement getId = conn.prepareStatement("SELECT id FROM Meals WHERE food_name = ?");
+                    getId.setString(1, selectedMeal);
+                    ResultSet rs = getId.executeQuery();
+                    if (rs.next()) {
+                        mealId = rs.getInt("id");
+                    } else {
+                        messageLabel.setText("Selected meal not found.");
+                        return;
+                    }
                 }
-            } else {
-                messageLabel.setText("Please select a meal and date.");
+
+                PreparedStatement logMeal = conn.prepareStatement(
+                        "INSERT INTO User_Meals (user_id, meal_id, meal_date) VALUES (?, ?, ?)"
+                );
+                logMeal.setInt(1, user.getId());
+                logMeal.setInt(2, mealId);
+                logMeal.setDate(3, Date.valueOf(selectedDate));
+
+                int rows = logMeal.executeUpdate();
+                if (rows > 0) {
+                    messageLabel.setTextFill(Color.web("#27AE60"));
+                    messageLabel.setText("Meal logged successfully!");
+                } else {
+                    messageLabel.setText("Failed to log meal.");
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                messageLabel.setText("Database error.");
+            } catch (NumberFormatException ex) {
+                messageLabel.setText("Calories must be a number.");
             }
         });
 
-        backButton.setOnAction(e -> {
-            new DashboardScreen(user).start(stage);
-        });
+        backButton.setOnAction(e -> new DashboardScreen(user).start(stage));
 
-        VBox layout = new VBox(12, title, mealDropdown, datePicker, logButton, backButton, messageLabel);
+        VBox layout = new VBox(12, title, mealDropdown, customMealField, caloriesField, mealTypeBox, datePicker, logButton, backButton, messageLabel);
         layout.setPadding(new Insets(25));
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: #FDFEFE;");
 
-        Scene scene = new Scene(layout, 400, 350);
+        Scene scene = new Scene(layout, 420, 500);
         stage.setTitle("Log Meal");
         stage.setScene(scene);
         stage.show();
