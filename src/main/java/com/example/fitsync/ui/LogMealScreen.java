@@ -19,6 +19,7 @@ import java.time.LocalDate;
 
 public class LogMealScreen {
     private final User user;
+    private ObservableList<String> mealNames = FXCollections.observableArrayList();
 
     public LogMealScreen(User user) {
         this.user = user;
@@ -57,6 +58,16 @@ public class LogMealScreen {
         logButton.setPrefHeight(35);
         logButton.setStyle("-fx-background-color: #2ECC71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
 
+        Button updateButton = new Button("Update Meal");
+        updateButton.setPrefWidth(140);
+        updateButton.setPrefHeight(35);
+        updateButton.setStyle("-fx-background-color: #F1C40F; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
+
+        Button deleteButton = new Button("Delete Meal");
+        deleteButton.setPrefWidth(140);
+        deleteButton.setPrefHeight(35);
+        deleteButton.setStyle("-fx-background-color: #E74C3C; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
+
         Button backButton = new Button("Back");
         backButton.setPrefWidth(140);
         backButton.setPrefHeight(35);
@@ -67,104 +78,157 @@ public class LogMealScreen {
         messageLabel.setTextFill(Color.web("#E74C3C"));
 
         // Load meals
-        ObservableList<String> mealNames = FXCollections.observableArrayList();
+        loadMeals(mealDropdown);
+
+        logButton.setOnAction(e -> {
+            String name = customMealField.getText().trim();
+            String type = mealTypeBox.getValue();
+            String cal = caloriesField.getText().trim();
+            LocalDate date = datePicker.getValue();
+
+            if (name.isEmpty() || type == null || cal.isEmpty() || date == null) {
+                messageLabel.setText("Please complete all fields.");
+                return;
+            }
+
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                double calories = Double.parseDouble(cal);
+                PreparedStatement insertMeal = conn.prepareStatement(
+                        "INSERT INTO Meals (food_name, calories, meal_type) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+                insertMeal.setString(1, name);
+                insertMeal.setDouble(2, calories);
+                insertMeal.setString(3, type);
+                insertMeal.executeUpdate();
+
+                ResultSet rs = insertMeal.getGeneratedKeys();
+                int mealId = -1;
+                if (rs.next()) mealId = rs.getInt(1);
+
+                PreparedStatement log = conn.prepareStatement(
+                        "INSERT INTO User_Meals (user_id, meal_id, meal_date) VALUES (?, ?, ?)");
+                log.setInt(1, user.getId());
+                log.setInt(2, mealId);
+                log.setDate(3, Date.valueOf(date));
+                log.executeUpdate();
+
+                messageLabel.setTextFill(Color.web("#27AE60"));
+                messageLabel.setText("Meal logged successfully!");
+                refreshDropdown(mealDropdown);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                messageLabel.setText("Error logging meal.");
+            }
+        });
+
+        updateButton.setOnAction(e -> {
+            String selectedMeal = mealDropdown.getValue();
+            String newName = customMealField.getText().trim();
+            String cal = caloriesField.getText().trim();
+            String type = mealTypeBox.getValue();
+
+            if (selectedMeal == null || newName.isEmpty() || cal.isEmpty() || type == null) {
+                messageLabel.setText("Select meal & fill new data.");
+                return;
+            }
+
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                double newCal = Double.parseDouble(cal);
+
+                PreparedStatement update = conn.prepareStatement(
+                        "UPDATE Meals SET food_name = ?, calories = ?, meal_type = ? WHERE food_name = ?");
+                update.setString(1, newName);
+                update.setDouble(2, newCal);
+                update.setString(3, type);
+                update.setString(4, selectedMeal);
+                int rows = update.executeUpdate();
+
+                if (rows > 0) {
+                    messageLabel.setTextFill(Color.web("#27AE60"));
+                    messageLabel.setText("Meal updated.");
+                    refreshDropdown(mealDropdown);
+                } else {
+                    messageLabel.setText("Update failed.");
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                messageLabel.setText("Invalid input.");
+            }
+        });
+
+        deleteButton.setOnAction(e -> {
+            String selectedMeal = mealDropdown.getValue();
+            if (selectedMeal == null) {
+                messageLabel.setText("Select a meal to delete.");
+                return;
+            }
+
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                PreparedStatement delete = conn.prepareStatement("DELETE FROM Meals WHERE food_name = ?");
+                delete.setString(1, selectedMeal);
+                int rows = delete.executeUpdate();
+                if (rows > 0) {
+                    messageLabel.setTextFill(Color.web("#27AE60"));
+                    messageLabel.setText("Meal deleted.");
+                    refreshDropdown(mealDropdown);
+                } else {
+                    messageLabel.setText("Delete failed.");
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                messageLabel.setText("Error deleting meal.");
+            }
+        });
+
+        backButton.setOnAction(e -> new DashboardScreen(user).start(stage));
+
+        mealDropdown.setOnAction(e -> {
+            String selected = mealDropdown.getValue();
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                PreparedStatement stmt = conn.prepareStatement("SELECT calories, meal_type FROM Meals WHERE food_name = ?");
+                stmt.setString(1, selected);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    caloriesField.setText(String.valueOf(rs.getDouble("calories")));
+                    mealTypeBox.setValue(rs.getString("meal_type"));
+                    customMealField.setText(selected);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        VBox layout = new VBox(12,
+                title, mealDropdown, customMealField, caloriesField,
+                mealTypeBox, datePicker,
+                logButton, updateButton, deleteButton,
+                backButton, messageLabel);
+        layout.setPadding(new Insets(25));
+        layout.setAlignment(Pos.CENTER);
+        layout.setStyle("-fx-background-color: #FDFEFE;");
+
+        Scene scene = new Scene(layout, 440, 560);
+        stage.setTitle("Log Meal");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    private void loadMeals(ComboBox<String> box) {
+        mealNames.clear();
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT food_name FROM Meals")) {
             while (rs.next()) {
                 mealNames.add(rs.getString("food_name"));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        mealDropdown.setItems(mealNames);
+        box.setItems(mealNames);
+    }
 
-        logButton.setOnAction(e -> {
-            String selectedMeal = mealDropdown.getValue();
-            String customMeal = customMealField.getText().trim();
-            String mealType = mealTypeBox.getValue();
-            String caloriesText = caloriesField.getText().trim();
-            LocalDate selectedDate = datePicker.getValue();
-
-            if ((selectedMeal == null && customMeal.isEmpty()) || selectedDate == null) {
-                messageLabel.setText("Please select or enter a meal and date.");
-                return;
-            }
-
-            try (Connection conn = DatabaseConnection.getConnection()) {
-                int mealId;
-
-                if (!customMeal.isEmpty()) {
-                    if (caloriesText.isEmpty() || mealType == null) {
-                        messageLabel.setText("Enter calories and meal type for custom meals.");
-                        return;
-                    }
-
-                    double calories = Double.parseDouble(caloriesText);
-
-                    // Insert custom meal if not exists
-                    PreparedStatement insertMeal = conn.prepareStatement(
-                            "INSERT IGNORE INTO Meals (food_name, calories, meal_type) VALUES (?, ?, ?)"
-                    );
-                    insertMeal.setString(1, customMeal);
-                    insertMeal.setDouble(2, calories);
-                    insertMeal.setString(3, mealType);
-                    insertMeal.executeUpdate();
-
-                    PreparedStatement getId = conn.prepareStatement("SELECT id FROM Meals WHERE food_name = ?");
-                    getId.setString(1, customMeal);
-                    ResultSet rs = getId.executeQuery();
-                    if (rs.next()) {
-                        mealId = rs.getInt("id");
-                        if (!mealNames.contains(customMeal)) mealNames.add(customMeal);
-                    } else {
-                        messageLabel.setText("Failed to retrieve meal ID.");
-                        return;
-                    }
-                } else {
-                    PreparedStatement getId = conn.prepareStatement("SELECT id FROM Meals WHERE food_name = ?");
-                    getId.setString(1, selectedMeal);
-                    ResultSet rs = getId.executeQuery();
-                    if (rs.next()) {
-                        mealId = rs.getInt("id");
-                    } else {
-                        messageLabel.setText("Selected meal not found.");
-                        return;
-                    }
-                }
-
-                PreparedStatement logMeal = conn.prepareStatement(
-                        "INSERT INTO User_Meals (user_id, meal_id, meal_date) VALUES (?, ?, ?)"
-                );
-                logMeal.setInt(1, user.getId());
-                logMeal.setInt(2, mealId);
-                logMeal.setDate(3, Date.valueOf(selectedDate));
-
-                int rows = logMeal.executeUpdate();
-                if (rows > 0) {
-                    messageLabel.setTextFill(Color.web("#27AE60"));
-                    messageLabel.setText("Meal logged successfully!");
-                } else {
-                    messageLabel.setText("Failed to log meal.");
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-                messageLabel.setText("Database error.");
-            } catch (NumberFormatException ex) {
-                messageLabel.setText("Calories must be a number.");
-            }
-        });
-
-        backButton.setOnAction(e -> new DashboardScreen(user).start(stage));
-
-        VBox layout = new VBox(12, title, mealDropdown, customMealField, caloriesField, mealTypeBox, datePicker, logButton, backButton, messageLabel);
-        layout.setPadding(new Insets(25));
-        layout.setAlignment(Pos.CENTER);
-        layout.setStyle("-fx-background-color: #FDFEFE;");
-
-        Scene scene = new Scene(layout, 420, 500);
-        stage.setTitle("Log Meal");
-        stage.setScene(scene);
-        stage.show();
+    private void refreshDropdown(ComboBox<String> box) {
+        loadMeals(box);
+        box.setValue(null);
+        box.setPromptText("Select Meal");
     }
 }
