@@ -23,49 +23,46 @@ public class UserProfileScreen {
     }
 
     public void start(Stage stage) {
+        boolean wasFullScreen = stage.isFullScreen(); // 🔒 save fullscreen state
+
         Label title = new Label("Your Profile");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 22));
         title.setTextFill(Color.web("#2C3E50"));
 
         TextField nameField = new TextField(user.getName());
-        nameField.setPrefHeight(40);
-        nameField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(nameField);
 
         TextField emailField = new TextField(user.getEmail());
         emailField.setDisable(true);
         emailField.setPrefHeight(40);
+        emailField.setMaxWidth(300);
         emailField.setStyle("-fx-background-color: #E0E0E0; -fx-border-radius: 5; -fx-background-radius: 5;");
 
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("New Password (leave blank to keep current)");
-        passwordField.setPrefHeight(40);
-        passwordField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(passwordField);
 
         TextField ageField = new TextField(String.valueOf(user.getAge()));
-        ageField.setPrefHeight(40);
-        ageField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(ageField);
 
         ComboBox<String> genderBox = new ComboBox<>();
         genderBox.getItems().addAll("M", "F");
         genderBox.setValue(user.getGender());
-        genderBox.setPrefHeight(40);
-        genderBox.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(genderBox);
 
         TextField weightField = new TextField(String.valueOf(user.getWeight()));
-        weightField.setPrefHeight(40);
-        weightField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(weightField);
 
         TextField heightField = new TextField(String.valueOf(user.getHeight()));
-        heightField.setPrefHeight(40);
-        heightField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(heightField);
 
         Button saveButton = new Button("Save Changes");
-        saveButton.setPrefWidth(160);
+        saveButton.setPrefWidth(200);
         saveButton.setPrefHeight(35);
         saveButton.setStyle("-fx-background-color: #2ECC71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
 
         Button backButton = new Button("Back");
-        backButton.setPrefWidth(160);
+        backButton.setPrefWidth(200);
         backButton.setPrefHeight(35);
         backButton.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
 
@@ -116,20 +113,33 @@ public class UserProfileScreen {
 
         backButton.setOnAction(e -> {
             new DashboardScreen(user).start(stage);
+            stage.setFullScreen(wasFullScreen);
         });
 
-        VBox layout = new VBox(12,
+        VBox form = new VBox(12,
                 title, nameField, emailField, passwordField,
                 ageField, genderBox, weightField, heightField,
                 saveButton, backButton, messageLabel
         );
-        layout.setPadding(new Insets(25));
+        form.setAlignment(Pos.CENTER);
+        form.setMaxWidth(400);
+
+        VBox layout = new VBox(form);
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: #FDFEFE;");
+        layout.prefWidthProperty().bind(stage.widthProperty());
+        layout.prefHeightProperty().bind(stage.heightProperty());
 
-        Scene scene = new Scene(layout, 400, 520);
+        Scene scene = new Scene(layout);
         stage.setTitle("User Profile");
         stage.setScene(scene);
+        stage.setFullScreen(wasFullScreen);
         stage.show();
+    }
+
+    private void styleInput(Control input) {
+        input.setPrefHeight(40);
+        input.setMaxWidth(300);
+        input.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
     }
 }

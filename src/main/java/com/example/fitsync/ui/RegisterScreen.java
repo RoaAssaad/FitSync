@@ -15,6 +15,8 @@ import javafx.stage.Stage;
 public class RegisterScreen {
 
     public void start(Stage stage) {
+        boolean wasFullScreen = stage.isFullScreen(); // 🔒 save fullscreen state
+
         Label title = new Label("FitSync - Register");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         title.setTextFill(Color.web("#2C3E50"));
@@ -96,6 +98,7 @@ public class RegisterScreen {
 
         backButton.setOnAction(e -> {
             new LoginScreen().start(stage);
+            stage.setFullScreen(wasFullScreen); // 🔁 restore fullscreen state when going back
         });
 
         VBox layout = new VBox(12,
@@ -106,9 +109,15 @@ public class RegisterScreen {
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: #FDFEFE;");
 
-        Scene scene = new Scene(layout, 400, 550);
+        // 💡 stretch to fit fullscreen window if active
+        layout.prefWidthProperty().bind(stage.widthProperty());
+        layout.prefHeightProperty().bind(stage.heightProperty());
+
+        Scene scene = new Scene(layout);
         stage.setTitle("FitSync - Register");
         stage.setScene(scene);
+
+        stage.setFullScreen(wasFullScreen); // 🔁 re-apply fullscreen for consistency
         stage.show();
     }
 }

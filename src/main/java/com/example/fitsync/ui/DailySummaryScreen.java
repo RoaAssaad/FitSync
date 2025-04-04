@@ -23,31 +23,27 @@ public class DailySummaryScreen {
     }
 
     public void start(Stage stage) {
+        boolean wasFullScreen = stage.isFullScreen(); // 🔒 remember fullscreen
+
         Label title = new Label("Your Daily Summary");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         title.setTextFill(Color.web("#2C3E50"));
 
         DatePicker datePicker = new DatePicker(LocalDate.now());
-        datePicker.setPrefHeight(40);
-        datePicker.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(datePicker);
 
         Button viewButton = new Button("View Summary");
-        viewButton.setPrefWidth(140);
-        viewButton.setPrefHeight(35);
-        viewButton.setStyle("-fx-background-color: #2ECC71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
+        styleButton(viewButton, "#2ECC71");
 
         Button backButton = new Button("Back");
-        backButton.setPrefWidth(140);
-        backButton.setPrefHeight(35);
-        backButton.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
+        styleButton(backButton, "#3498DB");
 
         Label caloriesInLabel = new Label("Calories Consumed: -");
-        caloriesInLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 16));
-        caloriesInLabel.setTextFill(Color.web("#34495E"));
-
         Label caloriesOutLabel = new Label("Calories Burned: -");
-        caloriesOutLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 16));
-        caloriesOutLabel.setTextFill(Color.web("#34495E"));
+        for (Label label : new Label[]{caloriesInLabel, caloriesOutLabel}) {
+            label.setFont(Font.font("Arial", FontWeight.NORMAL, 16));
+            label.setTextFill(Color.web("#34495E"));
+        }
 
         viewButton.setOnAction(e -> {
             LocalDate selectedDate = datePicker.getValue();
@@ -109,7 +105,6 @@ public class DailySummaryScreen {
 
                 caloriesInLabel.setText("Calories Consumed: " + totalIn);
                 caloriesOutLabel.setText("Calories Burned: " + totalOut);
-
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -117,16 +112,32 @@ public class DailySummaryScreen {
 
         backButton.setOnAction(e -> {
             new DashboardScreen(user).start(stage);
+            stage.setFullScreen(wasFullScreen);
         });
 
-        VBox layout = new VBox(12, title, datePicker, viewButton, caloriesInLabel, caloriesOutLabel, backButton);
-        layout.setPadding(new Insets(25));
+        VBox layout = new VBox(14, title, datePicker, viewButton, caloriesInLabel, caloriesOutLabel, backButton);
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: #FDFEFE;");
+        layout.setPadding(new Insets(25));
+        layout.prefWidthProperty().bind(stage.widthProperty());
+        layout.prefHeightProperty().bind(stage.heightProperty());
 
-        Scene scene = new Scene(layout, 400, 350);
+        Scene scene = new Scene(layout);
         stage.setTitle("Daily Summary");
         stage.setScene(scene);
+        stage.setFullScreen(wasFullScreen);
         stage.show();
+    }
+
+    private void styleInput(Control control) {
+        control.setPrefHeight(40);
+        control.setMaxWidth(300);
+        control.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+    }
+
+    private void styleButton(Button button, String color) {
+        button.setPrefWidth(160);
+        button.setPrefHeight(35);
+        button.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
     }
 }

@@ -26,32 +26,31 @@ public class LogMealScreen {
     }
 
     public void start(Stage stage) {
+        boolean wasFullScreen = stage.isFullScreen(); // preserve fullscreen state
+
         Label title = new Label("Log a Meal");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 22));
         title.setTextFill(Color.web("#2C3E50"));
 
         ComboBox<String> mealDropdown = new ComboBox<>();
         mealDropdown.setPromptText("Select Meal");
-        mealDropdown.setPrefHeight(40);
-        mealDropdown.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(mealDropdown);
 
         TextField customMealField = new TextField();
         customMealField.setPromptText("Or enter custom meal name");
-        customMealField.setPrefHeight(40);
-        customMealField.setStyle("-fx-background-color: #FBFCFC; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(customMealField);
 
         TextField caloriesField = new TextField();
         caloriesField.setPromptText("Calories");
-        caloriesField.setPrefHeight(40);
+        styleInput(caloriesField);
 
         ComboBox<String> mealTypeBox = new ComboBox<>();
         mealTypeBox.setPromptText("Meal Type");
         mealTypeBox.setItems(FXCollections.observableArrayList("Breakfast", "Lunch", "Dinner", "Snack"));
-        mealTypeBox.setPrefHeight(40);
+        styleInput(mealTypeBox);
 
         DatePicker datePicker = new DatePicker(LocalDate.now());
-        datePicker.setPrefHeight(40);
-        datePicker.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(datePicker);
 
         Button logButton = new Button("Log Meal");
         Button updateButton = new Button("Update Meal");
@@ -60,7 +59,7 @@ public class LogMealScreen {
 
         for (Button b : new Button[]{logButton, updateButton, deleteButton, backButton}) {
             b.setPrefHeight(35);
-            b.setPrefWidth(140);
+            b.setMaxWidth(200);
         }
 
         logButton.setStyle("-fx-background-color: #2ECC71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
@@ -192,21 +191,36 @@ public class LogMealScreen {
             }
         });
 
-        backButton.setOnAction(e -> new DashboardScreen(user).start(stage));
+        backButton.setOnAction(e -> {
+            new DashboardScreen(user).start(stage);
+            stage.setFullScreen(wasFullScreen);
+        });
 
-        VBox layout = new VBox(12,
+        VBox form = new VBox(12,
                 title, mealDropdown, customMealField, caloriesField,
                 mealTypeBox, datePicker,
                 logButton, updateButton, deleteButton,
                 backButton, messageLabel);
-        layout.setPadding(new Insets(25));
+        form.setAlignment(Pos.CENTER);
+        form.setMaxWidth(400);
+
+        VBox layout = new VBox(form);
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: #FDFEFE;");
+        layout.prefWidthProperty().bind(stage.widthProperty());
+        layout.prefHeightProperty().bind(stage.heightProperty());
 
-        Scene scene = new Scene(layout, 440, 560);
+        Scene scene = new Scene(layout);
         stage.setTitle("Log Meal");
         stage.setScene(scene);
+        stage.setFullScreen(wasFullScreen);
         stage.show();
+    }
+
+    private void styleInput(Control input) {
+        input.setPrefHeight(40);
+        input.setMaxWidth(300);
+        input.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
     }
 
     private void loadMeals(ComboBox<String> box) {
@@ -266,5 +280,4 @@ public class LogMealScreen {
             insert.executeUpdate();
         }
     }
-
-}//
+}

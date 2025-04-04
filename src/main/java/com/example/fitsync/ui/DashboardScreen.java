@@ -19,6 +19,8 @@ public class DashboardScreen {
     }
 
     public void start(Stage stage) {
+        boolean wasFullScreen = stage.isFullScreen(); // remember fullscreen state
+
         Label greeting = new Label("Welcome, " + user.getName() + "!");
         greeting.setFont(Font.font("Arial", FontWeight.BOLD, 22));
         greeting.setTextFill(Color.web("#2C3E50"));
@@ -33,14 +35,12 @@ public class DashboardScreen {
         progressRadio.setToggleGroup(sectionGroup);
         mealsRadio.setSelected(true);
 
-        // Style radio buttons
         for (RadioButton rb : new RadioButton[]{mealsRadio, workoutsRadio, progressRadio}) {
             rb.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
             rb.setTextFill(Color.web("#34495E"));
         }
 
         VBox sectionButtonsBox = new VBox(10);
-        sectionButtonsBox.setPadding(new Insets(10));
         sectionButtonsBox.setAlignment(Pos.CENTER);
 
         Runnable showMeals = () -> {
@@ -75,38 +75,51 @@ public class DashboardScreen {
         workoutsRadio.setOnMouseClicked(e -> showWorkouts.run());
         progressRadio.setOnMouseClicked(e -> showProgress.run());
 
+        // 🟩 welcome section (top)
+        HBox greetingBox = new HBox(greeting);
+        greetingBox.setAlignment(Pos.CENTER);
+
+        HBox radioBox = new HBox(10, mealsRadio, workoutsRadio, progressRadio);
+        radioBox.setAlignment(Pos.CENTER);
+
+        VBox topContent = new VBox(15, greetingBox, new Label("Choose Section:"), radioBox, new Separator());
+        topContent.setPadding(new Insets(30, 0, 10, 0));
+        topContent.setAlignment(Pos.CENTER);
+
+        // 🟦 buttons section (center)
+        StackPane centerWrapper = new StackPane(sectionButtonsBox);
+        centerWrapper.setAlignment(Pos.CENTER);
+
+        // 🟥 logout button (bottom)
         Button logoutBtn = new Button("Logout");
         logoutBtn.setPrefWidth(140);
         logoutBtn.setPrefHeight(35);
         logoutBtn.setStyle("-fx-background-color: #E74C3C; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
-        logoutBtn.setOnAction(e -> new LoginScreen().start(stage));
-
-        VBox topPanel = new VBox(10,
-                greeting,
-                new Label("Choose Section:"),
-                new HBox(10, mealsRadio, workoutsRadio, progressRadio),
-                new Separator()
-        );
-        topPanel.setPadding(new Insets(15));
-        topPanel.setAlignment(Pos.CENTER);
+        logoutBtn.setOnAction(e -> {
+            new LoginScreen().start(stage);
+            stage.setFullScreen(false);
+        });
 
         BorderPane layout = new BorderPane();
-        layout.setTop(topPanel);
-        layout.setCenter(sectionButtonsBox);
+        layout.setTop(topContent);
+        layout.setCenter(centerWrapper);
         layout.setBottom(logoutBtn);
         BorderPane.setAlignment(logoutBtn, Pos.CENTER);
         BorderPane.setMargin(logoutBtn, new Insets(15));
         layout.setStyle("-fx-background-color: #FDFEFE;");
+        layout.prefWidthProperty().bind(stage.widthProperty());
+        layout.prefHeightProperty().bind(stage.heightProperty());
 
-        Scene scene = new Scene(layout, 420, 520);
+        Scene scene = new Scene(layout);
         stage.setTitle("FitSync - Dashboard");
         stage.setScene(scene);
+        stage.setFullScreen(wasFullScreen);
         stage.show();
     }
 
     private Button createButton(String label, Runnable action) {
         Button btn = new Button(label);
-        btn.setPrefWidth(200);
+        btn.setPrefWidth(220);
         btn.setPrefHeight(40);
         btn.setStyle("-fx-background-color: #2ECC71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
         btn.setOnAction(e -> action.run());

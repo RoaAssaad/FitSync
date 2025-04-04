@@ -25,6 +25,8 @@ public class ViewMealsScreen {
     }
 
     public void start(Stage stage) {
+        boolean wasFullScreen = stage.isFullScreen(); // save fullscreen state
+
         Label title = new Label("View Logged Meals");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 22));
         title.setTextFill(Color.web("#2C3E50"));
@@ -90,16 +92,25 @@ public class ViewMealsScreen {
             }
         });
 
-        backButton.setOnAction(e -> new DashboardScreen(user).start(stage));
+        backButton.setOnAction(e -> {
+            boolean stillFullScreen = stage.isFullScreen();
+            new DashboardScreen(user).start(stage);
+            stage.setFullScreen(stillFullScreen);
+        });
 
         VBox layout = new VBox(12, title, datePicker, viewButton, messageLabel, mealList, backButton);
         layout.setPadding(new Insets(25));
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: #FDFEFE;");
 
-        Scene scene = new Scene(layout, 420, 400);
-        stage.setTitle("View Meals");
+        // 🚀 make sure layout auto-resizes with stage
+        layout.prefWidthProperty().bind(stage.widthProperty());
+        layout.prefHeightProperty().bind(stage.heightProperty());
+
+        Scene scene = new Scene(layout);
         stage.setScene(scene);
+        stage.setFullScreen(wasFullScreen); // force fullscreen after scene set
+        stage.setTitle("View Meals");
         stage.show();
     }
 }

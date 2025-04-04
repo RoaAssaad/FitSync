@@ -29,42 +29,36 @@ public class LogWorkoutScreen {
     }
 
     public void start(Stage stage) {
+        boolean wasFullScreen = stage.isFullScreen(); // 🔒 remember fullscreen
+
         Label title = new Label("Log a Workout");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 22));
         title.setTextFill(Color.web("#2C3E50"));
 
         ComboBox<String> workoutDropdown = new ComboBox<>();
         workoutDropdown.setPromptText("Select Workout");
-        workoutDropdown.setPrefHeight(40);
-        workoutDropdown.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(workoutDropdown);
 
         TextField workoutNameField = new TextField();
         workoutNameField.setPromptText("Workout name");
-        workoutNameField.setPrefHeight(40);
-        workoutNameField.setStyle("-fx-background-color: #FBFCFC; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(workoutNameField);
 
         TextField caloriesField = new TextField();
         caloriesField.setPromptText("Calories Burned");
-        caloriesField.setPrefHeight(40);
+        styleInput(caloriesField);
 
         DatePicker datePicker = new DatePicker(LocalDate.now());
-        datePicker.setPrefHeight(40);
-        datePicker.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(datePicker);
 
         Button logButton = new Button("Log Workout");
         Button updateButton = new Button("Update Workout");
         Button deleteButton = new Button("Delete Workout");
         Button backButton = new Button("Back");
 
-        for (Button b : new Button[]{logButton, updateButton, deleteButton, backButton}) {
-            b.setPrefHeight(35);
-            b.setPrefWidth(140);
-        }
-
-        logButton.setStyle("-fx-background-color: #2ECC71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
-        updateButton.setStyle("-fx-background-color: #F1C40F; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
-        deleteButton.setStyle("-fx-background-color: #E74C3C; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
-        backButton.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
+        styleButton(logButton, "#2ECC71");
+        styleButton(updateButton, "#F1C40F");
+        styleButton(deleteButton, "#E74C3C");
+        styleButton(backButton, "#3498DB");
 
         Label messageLabel = new Label();
         messageLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
@@ -86,7 +80,8 @@ public class LogWorkoutScreen {
                 double calories = Double.parseDouble(caloriesText);
 
                 PreparedStatement insertWorkout = conn.prepareStatement(
-                        "INSERT INTO Workouts (name, duration) VALUES (?, ?) ON DUPLICATE KEY UPDATE duration = VALUES(duration)", Statement.RETURN_GENERATED_KEYS);
+                        "INSERT INTO Workouts (name, duration) VALUES (?, ?) " +
+                                "ON DUPLICATE KEY UPDATE duration = VALUES(duration)", Statement.RETURN_GENERATED_KEYS);
                 insertWorkout.setString(1, name);
                 insertWorkout.setInt(2, (int) calories);
                 insertWorkout.executeUpdate();
@@ -102,7 +97,8 @@ public class LogWorkoutScreen {
                     return;
                 }
 
-                PreparedStatement log = conn.prepareStatement("INSERT INTO User_Workouts (user_id, workout_id, completion_date) VALUES (?, ?, ?)");
+                PreparedStatement log = conn.prepareStatement(
+                        "INSERT INTO User_Workouts (user_id, workout_id, completion_date) VALUES (?, ?, ?)");
                 log.setInt(1, user.getId());
                 log.setInt(2, workoutId);
                 log.setDate(3, Date.valueOf(date));
@@ -184,7 +180,10 @@ public class LogWorkoutScreen {
             }
         });
 
-        backButton.setOnAction(e -> new DashboardScreen(user).start(stage));
+        backButton.setOnAction(e -> {
+            new DashboardScreen(user).start(stage);
+            stage.setFullScreen(wasFullScreen);
+        });
 
         VBox layout = new VBox(12,
                 title, workoutDropdown, workoutNameField, caloriesField, datePicker,
@@ -193,10 +192,13 @@ public class LogWorkoutScreen {
         layout.setPadding(new Insets(25));
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: #FDFEFE;");
+        layout.prefWidthProperty().bind(stage.widthProperty());
+        layout.prefHeightProperty().bind(stage.heightProperty());
 
-        Scene scene = new Scene(layout, 440, 560);
+        Scene scene = new Scene(layout);
         stage.setTitle("Log Workout");
         stage.setScene(scene);
+        stage.setFullScreen(wasFullScreen);
         stage.show();
     }
 
@@ -228,31 +230,46 @@ public class LogWorkoutScreen {
 
     private void updateSummaryCaloriesBurned(Connection conn, LocalDate date) throws SQLException {
         PreparedStatement sumStmt = conn.prepareStatement(
-                "SELECT SUM(duration) FROM User_Workouts uw JOIN Workouts w ON uw.workout_id = w.id WHERE uw.user_id = ? AND uw.completion_date = ?");
+                "SELECT SUM(duration) FROM User_Workouts uw JOIN Workouts w ON uw.workout_id = w.id " +
+                        "WHERE uw.user_id = ? AND uw.completion_date = ?");
         sumStmt.setInt(1, user.getId());
         sumStmt.setDate(2, Date.valueOf(date));
         ResultSet rs = sumStmt.executeQuery();
         double total = 0.0;
         if (rs.next()) total = rs.getDouble(1);
 
-        PreparedStatement check = conn.prepareStatement("SELECT id FROM Daily_Summary WHERE user_id = ? AND date = ?");
+        PreparedStatement check = conn.prepareStatement(
+                "SELECT id FROM Daily_Summary WHERE user_id = ? AND date = ?");
         check.setInt(1, user.getId());
         check.setDate(2, Date.valueOf(date));
         ResultSet checkRs = check.executeQuery();
 
         if (checkRs.next()) {
-            PreparedStatement update = conn.prepareStatement("UPDATE Daily_Summary SET calories_burned = ? WHERE user_id = ? AND date = ?");
+            PreparedStatement update = conn.prepareStatement(
+                    "UPDATE Daily_Summary SET calories_burned = ? WHERE user_id = ? AND date = ?");
             update.setDouble(1, total);
             update.setInt(2, user.getId());
             update.setDate(3, Date.valueOf(date));
             update.executeUpdate();
         } else {
-            PreparedStatement insert = conn.prepareStatement("INSERT INTO Daily_Summary (user_id, calories_consumed, calories_burned, date) VALUES (?, 0, ?, ?)");
+            PreparedStatement insert = conn.prepareStatement(
+                    "INSERT INTO Daily_Summary (user_id, calories_consumed, calories_burned, date) VALUES (?, 0, ?, ?)");
             insert.setInt(1, user.getId());
             insert.setDouble(2, total);
             insert.setDate(3, Date.valueOf(date));
             insert.executeUpdate();
         }
     }
+
+    private void styleInput(Control control) {
+        control.setPrefHeight(40);
+        control.setMaxWidth(300);
+        control.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+    }
+
+    private void styleButton(Button button, String color) {
+        button.setPrefHeight(35);
+        button.setPrefWidth(160);
+        button.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
+    }
 }
-//

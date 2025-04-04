@@ -25,6 +25,7 @@ public class TodayDashboardScreen {
     }
 
     public void start(Stage stage) {
+        boolean wasFullScreen = stage.isFullScreen(); // 🔒 remember fullscreen
         LocalDate today = LocalDate.now();
 
         Label title = new Label("Today at a Glance - " + today);
@@ -34,7 +35,6 @@ public class TodayDashboardScreen {
         Label caloriesInLabel = new Label("Calories Consumed: -");
         Label caloriesOutLabel = new Label("Calories Burned: -");
         Label netCaloriesLabel = new Label("Net Calories: -");
-
         Label intakeGoalLabel = new Label("Intake Goal: -");
         Label burnGoalLabel = new Label("Burn Goal: -");
         Label intakeStatus = new Label();
@@ -47,11 +47,15 @@ public class TodayDashboardScreen {
         ListView<String> workoutsList = new ListView<>();
 
         Button backButton = new Button("Back");
-        backButton.setPrefWidth(140);
+        backButton.setPrefWidth(160);
         backButton.setPrefHeight(35);
         backButton.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
+        backButton.setOnAction(e -> {
+            new DashboardScreen(user).start(stage);
+            stage.setFullScreen(wasFullScreen);
+        });
 
-        // Style labels
+        // Styling labels
         for (Label label : new Label[]{caloriesInLabel, caloriesOutLabel, netCaloriesLabel,
                 intakeGoalLabel, burnGoalLabel, intakeStatus, burnStatus,
                 mealsTitle, workoutsTitle}) {
@@ -100,17 +104,17 @@ public class TodayDashboardScreen {
                 intakeGoalLabel.setText("Intake Goal: " + intakeGoal);
                 burnGoalLabel.setText("Burn Goal: " + burnGoal);
 
-                if (caloriesIn >= intakeGoal) {
-                    intakeStatus.setText("You reached your intake goal!");
-                } else {
-                    intakeStatus.setText((intakeGoal - caloriesIn) + " cal left to reach intake goal.");
-                }
+                intakeStatus.setText(
+                        caloriesIn >= intakeGoal
+                                ? "You reached your intake goal!"
+                                : (intakeGoal - caloriesIn) + " cal left to reach intake goal."
+                );
 
-                if (caloriesOut >= burnGoal) {
-                    burnStatus.setText("You hit your burn goal!");
-                } else {
-                    burnStatus.setText((burnGoal - caloriesOut) + " cal left to burn.");
-                }
+                burnStatus.setText(
+                        caloriesOut >= burnGoal
+                                ? "You hit your burn goal!"
+                                : (burnGoal - caloriesOut) + " cal left to burn."
+                );
             } else {
                 intakeGoalLabel.setText("No intake goal set.");
                 burnGoalLabel.setText("No burn goal set.");
@@ -166,10 +170,13 @@ public class TodayDashboardScreen {
         layout.setPadding(new Insets(25));
         layout.setAlignment(Pos.TOP_CENTER);
         layout.setStyle("-fx-background-color: #FDFEFE;");
+        layout.prefWidthProperty().bind(stage.widthProperty());
+        layout.prefHeightProperty().bind(stage.heightProperty());
 
-        Scene scene = new Scene(layout, 520, 630);
+        Scene scene = new Scene(layout);
         stage.setTitle("Today at a Glance");
         stage.setScene(scene);
+        stage.setFullScreen(wasFullScreen);
         stage.show();
     }
-}//
+}

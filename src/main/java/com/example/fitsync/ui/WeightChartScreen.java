@@ -8,13 +8,9 @@ import javafx.scene.Scene;
 import javafx.scene.chart.*;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 import java.sql.*;
-import java.time.LocalDate;
 
 public class WeightChartScreen {
     private final User user;
@@ -24,6 +20,8 @@ public class WeightChartScreen {
     }
 
     public void start(Stage stage) {
+        boolean wasFullScreen = stage.isFullScreen(); // 🔒 save fullscreen state
+
         CategoryAxis xAxis = new CategoryAxis();
         NumberAxis yAxis = new NumberAxis();
         xAxis.setLabel("Date");
@@ -34,6 +32,7 @@ public class WeightChartScreen {
         chart.setLegendVisible(false);
         chart.setCreateSymbols(true);
         chart.setStyle("-fx-background-color: #FDFEFE;");
+        chart.setMaxWidth(600);
 
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Weight");
@@ -56,19 +55,25 @@ public class WeightChartScreen {
         chart.getData().add(series);
 
         Button backButton = new Button("Back");
-        backButton.setPrefWidth(140);
+        backButton.setPrefWidth(160);
         backButton.setPrefHeight(35);
         backButton.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
-        backButton.setOnAction(e -> new DashboardScreen(user).start(stage));
+        backButton.setOnAction(e -> {
+            new DashboardScreen(user).start(stage);
+            stage.setFullScreen(wasFullScreen); // 🔁 restore fullscreen
+        });
 
-        VBox layout = new VBox(15, chart, backButton);
+        VBox layout = new VBox(20, chart, backButton);
         layout.setPadding(new Insets(25));
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: #FDFEFE;");
+        layout.prefWidthProperty().bind(stage.widthProperty());
+        layout.prefHeightProperty().bind(stage.heightProperty());
 
-        Scene scene = new Scene(layout, 550, 430);
+        Scene scene = new Scene(layout);
         stage.setTitle("Weight Chart");
         stage.setScene(scene);
+        stage.setFullScreen(wasFullScreen);
         stage.show();
     }
 }

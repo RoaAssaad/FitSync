@@ -22,27 +22,27 @@ public class GoalScreen {
     }
 
     public void start(Stage stage) {
+        boolean wasFullScreen = stage.isFullScreen(); // 🔒 keep fullscreen state
+
         Label title = new Label("Set Daily Calorie Goals");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 22));
         title.setTextFill(Color.web("#2C3E50"));
 
         TextField intakeGoalField = new TextField();
         intakeGoalField.setPromptText("Calories to Consume (e.g. 2000)");
-        intakeGoalField.setPrefHeight(40);
-        intakeGoalField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(intakeGoalField);
 
         TextField burnGoalField = new TextField();
         burnGoalField.setPromptText("Calories to Burn (e.g. 500)");
-        burnGoalField.setPrefHeight(40);
-        burnGoalField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        styleInput(burnGoalField);
 
         Button saveButton = new Button("Save Goals");
-        saveButton.setPrefWidth(140);
+        saveButton.setPrefWidth(160);
         saveButton.setPrefHeight(35);
         saveButton.setStyle("-fx-background-color: #2ECC71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
 
         Button backButton = new Button("Back");
-        backButton.setPrefWidth(140);
+        backButton.setPrefWidth(160);
         backButton.setPrefHeight(35);
         backButton.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
 
@@ -78,11 +78,11 @@ public class GoalScreen {
                     stmt.setDouble(3, burnGoal);
 
                     int rows = stmt.executeUpdate();
-                    status.setTextFill(Color.web("#27AE60")); // green
+                    status.setTextFill(Color.web("#27AE60"));
                     status.setText(rows > 0 ? "Goals saved!" : "Failed to save goals.");
                 }
             } catch (NumberFormatException ex) {
-                status.setTextFill(Color.web("#E74C3C")); // red
+                status.setTextFill(Color.web("#E74C3C"));
                 status.setText("Please enter valid numbers.");
             } catch (SQLException ex) {
                 ex.printStackTrace();
@@ -91,16 +91,31 @@ public class GoalScreen {
             }
         });
 
-        backButton.setOnAction(e -> new DashboardScreen(user).start(stage));
+        backButton.setOnAction(e -> {
+            new DashboardScreen(user).start(stage);
+            stage.setFullScreen(wasFullScreen);
+        });
 
-        VBox layout = new VBox(12, title, intakeGoalField, burnGoalField, saveButton, backButton, status);
-        layout.setPadding(new Insets(25));
+        VBox form = new VBox(12, title, intakeGoalField, burnGoalField, saveButton, backButton, status);
+        form.setAlignment(Pos.CENTER);
+        form.setMaxWidth(400);
+
+        VBox layout = new VBox(form);
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: #FDFEFE;");
+        layout.prefWidthProperty().bind(stage.widthProperty());
+        layout.prefHeightProperty().bind(stage.heightProperty());
 
-        Scene scene = new Scene(layout, 400, 330);
+        Scene scene = new Scene(layout);
         stage.setTitle("Set Daily Goals");
         stage.setScene(scene);
+        stage.setFullScreen(wasFullScreen);
         stage.show();
+    }
+
+    private void styleInput(Control input) {
+        input.setPrefHeight(40);
+        input.setMaxWidth(300);
+        input.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
     }
 }

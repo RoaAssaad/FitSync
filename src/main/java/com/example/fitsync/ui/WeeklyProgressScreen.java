@@ -24,6 +24,8 @@ public class WeeklyProgressScreen {
     }
 
     public void start(Stage stage) {
+        boolean wasFullScreen = stage.isFullScreen(); // 🔒 save fullscreen state
+
         CategoryAxis xAxis = new CategoryAxis();
         NumberAxis yAxis = new NumberAxis();
         xAxis.setLabel("Date");
@@ -35,6 +37,7 @@ public class WeeklyProgressScreen {
         barChart.setCategoryGap(10);
         barChart.setBarGap(4);
         barChart.setStyle("-fx-background-color: #FDFEFE;");
+        barChart.setMaxWidth(600);
 
         XYChart.Series<String, Number> consumedSeries = new XYChart.Series<>();
         consumedSeries.setName("Calories Consumed");
@@ -70,19 +73,25 @@ public class WeeklyProgressScreen {
         barChart.getData().addAll(consumedSeries, burnedSeries);
 
         Button backButton = new Button("Back");
-        backButton.setPrefWidth(140);
+        backButton.setPrefWidth(160);
         backButton.setPrefHeight(35);
         backButton.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
-        backButton.setOnAction(e -> new DashboardScreen(user).start(stage));
+        backButton.setOnAction(e -> {
+            new DashboardScreen(user).start(stage);
+            stage.setFullScreen(wasFullScreen); // 🔁 restore fullscreen after switching back
+        });
 
-        VBox layout = new VBox(15, barChart, backButton);
+        VBox layout = new VBox(20, barChart, backButton);
         layout.setPadding(new Insets(25));
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: #FDFEFE;");
+        layout.prefWidthProperty().bind(stage.widthProperty());
+        layout.prefHeightProperty().bind(stage.heightProperty());
 
-        Scene scene = new Scene(layout, 640, 450);
+        Scene scene = new Scene(layout);
         stage.setTitle("Weekly Progress");
         stage.setScene(scene);
+        stage.setFullScreen(wasFullScreen);
         stage.show();
     }
 }
