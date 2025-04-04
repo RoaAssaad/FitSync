@@ -8,7 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -24,28 +24,44 @@ public class WorkoutRecommendationsScreen {
     }
 
     public void start(Stage stage) {
+        boolean wasFullScreen = stage.isFullScreen();
+
         Label title = new Label("Workout Recommendations");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 22));
         title.setTextFill(Color.web("#2C3E50"));
 
-        ComboBox<String> difficultyBox = new ComboBox<>();
-        difficultyBox.getItems().addAll("Easy", "Medium", "Hard");
-        difficultyBox.setPromptText("Choose Fitness Level");
-        difficultyBox.setPrefHeight(40);
-        difficultyBox.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
+        // 🔘 Radio Buttons for Fitness Level
+        Label levelLabel = new Label("Choose Fitness Level:");
+        levelLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
+        levelLabel.setTextFill(Color.web("#34495E"));
 
+        RadioButton lowBtn = new RadioButton("Low");
+        RadioButton modBtn = new RadioButton("Moderate");
+        RadioButton highBtn = new RadioButton("High");
+
+        ToggleGroup levelGroup = new ToggleGroup();
+        lowBtn.setToggleGroup(levelGroup);
+        modBtn.setToggleGroup(levelGroup);
+        highBtn.setToggleGroup(levelGroup);
+
+        HBox radioRow = new HBox(20, lowBtn, modBtn, highBtn);
+        radioRow.setAlignment(Pos.CENTER);
+
+        VBox levelBox = new VBox(5, levelLabel, radioRow);
+        levelBox.setAlignment(Pos.CENTER);
+
+        // 🔢 Goal Calories Field
         TextField goalField = new TextField();
         goalField.setPromptText("Calories to Burn (optional)");
         goalField.setPrefHeight(40);
+        goalField.setMaxWidth(300);
         goalField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
 
+        // 🔘 Buttons
         Button recommendButton = new Button("Get Recommendations");
-        recommendButton.setPrefWidth(180);
+        recommendButton.setPrefWidth(200);
         recommendButton.setPrefHeight(35);
         recommendButton.setStyle("-fx-background-color: #2ECC71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
-
-        ListView<String> resultList = new ListView<>();
-        resultList.setPrefHeight(200);
 
         Button backButton = new Button("Back");
         backButton.setPrefWidth(140);
@@ -56,8 +72,15 @@ public class WorkoutRecommendationsScreen {
         status.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
         status.setTextFill(Color.web("#34495E"));
 
+        ListView<String> resultList = new ListView<>();
+        resultList.setPrefHeight(200);
+
         recommendButton.setOnAction(e -> {
-            String difficulty = difficultyBox.getValue();
+            String difficulty = null;
+            if (lowBtn.isSelected()) difficulty = "Easy";
+            else if (modBtn.isSelected()) difficulty = "Medium";
+            else if (highBtn.isSelected()) difficulty = "Hard";
+
             String goalText = goalField.getText().trim();
             Double goalCalories = null;
 
@@ -86,7 +109,6 @@ public class WorkoutRecommendationsScreen {
                 }
 
                 PreparedStatement stmt = conn.prepareStatement(query.toString());
-
                 int index = 1;
                 if (difficulty != null) {
                     stmt.setString(index++, difficulty);
@@ -115,7 +137,6 @@ public class WorkoutRecommendationsScreen {
                 }
 
                 resultList.setItems(recommendations);
-
             } catch (SQLException ex) {
                 ex.printStackTrace();
                 status.setTextFill(Color.web("#E74C3C"));
@@ -123,11 +144,14 @@ public class WorkoutRecommendationsScreen {
             }
         });
 
-        backButton.setOnAction(e -> new DashboardScreen(user).start(stage));
+        backButton.setOnAction(e -> {
+            new DashboardScreen(user).start(stage);
+            stage.setFullScreen(wasFullScreen);
+        });
 
         VBox layout = new VBox(12,
                 title,
-                difficultyBox,
+                levelBox,
                 goalField,
                 recommendButton,
                 status,
@@ -137,10 +161,13 @@ public class WorkoutRecommendationsScreen {
         layout.setPadding(new Insets(25));
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: #FDFEFE;");
+        layout.prefWidthProperty().bind(stage.widthProperty());
+        layout.prefHeightProperty().bind(stage.heightProperty());
 
-        Scene scene = new Scene(layout, 500, 530);
-        stage.setTitle("Workout Recommendations");
+        Scene scene = new Scene(layout);
         stage.setScene(scene);
+        stage.setTitle("Workout Recommendations");
+        stage.setFullScreen(wasFullScreen);
         stage.show();
     }
 }

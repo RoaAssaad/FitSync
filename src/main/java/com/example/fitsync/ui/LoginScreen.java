@@ -6,7 +6,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -15,31 +15,25 @@ import javafx.stage.Stage;
 public class LoginScreen {
 
     public void start(Stage stage) {
-        boolean wasFullScreen = stage.isFullScreen(); // Save fullscreen state
+        boolean wasFullScreen = stage.isFullScreen(); // Preserve fullscreen state
 
         Label title = new Label("FitSync - Login");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         title.setTextFill(Color.web("#2C3E50"));
 
         TextField emailField = new TextField();
+        styleInputField(emailField);
         emailField.setPromptText("Email");
-        emailField.setPrefHeight(40);
-        emailField.setMaxWidth(300);
-        emailField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
 
         PasswordField passwordField = new PasswordField();
+        styleInputField(passwordField);
         passwordField.setPromptText("Password");
-        passwordField.setPrefHeight(40);
-        passwordField.setMaxWidth(300);
-        passwordField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
 
         TextField visiblePasswordField = new TextField();
+        styleInputField(visiblePasswordField);
         visiblePasswordField.setPromptText("Password");
         visiblePasswordField.setManaged(false);
         visiblePasswordField.setVisible(false);
-        visiblePasswordField.setPrefHeight(40);
-        visiblePasswordField.setMaxWidth(300);
-        visiblePasswordField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
 
         CheckBox showPasswordCheckBox = new CheckBox("Show Password");
         showPasswordCheckBox.setTextFill(Color.web("#34495E"));
@@ -84,7 +78,7 @@ public class LoginScreen {
 
             if (user != null) {
                 new DashboardScreen(user).start(stage);
-                stage.setFullScreen(wasFullScreen); // Restore fullscreen
+                stage.setFullScreen(wasFullScreen);
             } else {
                 messageLabel.setText("Invalid email or password.");
             }
@@ -115,10 +109,19 @@ public class LoginScreen {
         layout.prefWidthProperty().bind(stage.widthProperty());
         layout.prefHeightProperty().bind(stage.heightProperty());
 
-        Scene scene = new Scene(layout);
+        Scene scene = new Scene(layout, 800, 600); // 💡 Default size avoids collapse
         stage.setTitle("FitSync - Login");
         stage.setScene(scene);
-        stage.setFullScreen(wasFullScreen); // Apply fullscreen for first load too
+        stage.setFullScreen(wasFullScreen); // Restore fullscreen
         stage.show();
+    }
+
+    private void styleInputField(TextField field) {
+        field.setPrefHeight(40);
+        field.setMaxWidth(300);
+        field.setStyle("-fx-background-color: #ECF0F1; " +
+                "-fx-border-color: #BDC3C7; " +
+                "-fx-border-radius: 5; " +
+                "-fx-background-radius: 5;");
     }
 }
