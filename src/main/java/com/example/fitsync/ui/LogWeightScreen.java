@@ -24,7 +24,7 @@ public class LogWeightScreen {
     }
 
     public void start(Stage stage) {
-        boolean wasFullScreen = stage.isFullScreen(); // 🔒 store fullscreen state
+        boolean wasFullScreen = stage.isFullScreen(); //  store fullscreen state
 
         Label title = new Label("Log Today’s Weight");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 22));

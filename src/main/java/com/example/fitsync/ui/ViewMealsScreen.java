@@ -103,7 +103,7 @@ public class ViewMealsScreen {
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: #FDFEFE;");
 
-        // 🚀 make sure layout auto-resizes with stage
+        // make sure layout auto-resizes with stage
         layout.prefWidthProperty().bind(stage.widthProperty());
         layout.prefHeightProperty().bind(stage.heightProperty());
 

@@ -30,7 +30,7 @@ public class WorkoutRecommendationsScreen {
         title.setFont(Font.font("Arial", FontWeight.BOLD, 22));
         title.setTextFill(Color.web("#2C3E50"));
 
-        // 🔘 Radio Buttons for Fitness Level
+        //  Radio Buttons for Fitness Level
         Label levelLabel = new Label("Choose Fitness Level:");
         levelLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
         levelLabel.setTextFill(Color.web("#34495E"));
@@ -50,14 +50,14 @@ public class WorkoutRecommendationsScreen {
         VBox levelBox = new VBox(5, levelLabel, radioRow);
         levelBox.setAlignment(Pos.CENTER);
 
-        // 🔢 Goal Calories Field
+        //  Goal Calories Field
         TextField goalField = new TextField();
         goalField.setPromptText("Calories to Burn (optional)");
         goalField.setPrefHeight(40);
         goalField.setMaxWidth(300);
         goalField.setStyle("-fx-background-color: #ECF0F1; -fx-border-color: #BDC3C7; -fx-border-radius: 5; -fx-background-radius: 5;");
 
-        // 🔘 Buttons
+        //  Buttons
         Button recommendButton = new Button("Get Recommendations");
         recommendButton.setPrefWidth(200);
         recommendButton.setPrefHeight(35);
@@ -89,7 +89,7 @@ public class WorkoutRecommendationsScreen {
                     goalCalories = Double.parseDouble(goalText);
                 } catch (NumberFormatException ex) {
                     status.setTextFill(Color.web("#E74C3C"));
-                    status.setText("⚠️ Invalid calorie input.");
+                    status.setText(" Invalid calorie input.");
                     return;
                 }
             }
@@ -140,7 +140,7 @@ public class WorkoutRecommendationsScreen {
             } catch (SQLException ex) {
                 ex.printStackTrace();
                 status.setTextFill(Color.web("#E74C3C"));
-                status.setText("❌ Database error.");
+                status.setText(" Database error.");
             }
         });
 

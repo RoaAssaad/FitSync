@@ -23,7 +23,7 @@ public class UserProfileScreen {
     }
 
     public void start(Stage stage) {
-        boolean wasFullScreen = stage.isFullScreen(); // 🔒 save fullscreen state
+        boolean wasFullScreen = stage.isFullScreen(); //  save fullscreen state
 
         Label title = new Label("Your Profile");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 22));
@@ -99,15 +99,15 @@ public class UserProfileScreen {
                 int rows = stmt.executeUpdate();
                 if (rows > 0) {
                     messageLabel.setTextFill(Color.web("#27AE60"));
-                    messageLabel.setText("✅ Profile updated successfully!");
+                    messageLabel.setText(" Profile updated successfully!");
                 } else {
                     messageLabel.setTextFill(Color.web("#E74C3C"));
-                    messageLabel.setText("⚠️ Failed to update profile.");
+                    messageLabel.setText(" Failed to update profile.");
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
                 messageLabel.setTextFill(Color.web("#E74C3C"));
-                messageLabel.setText("❌ Invalid input.");
+                messageLabel.setText(" Invalid input.");
             }
         });
 

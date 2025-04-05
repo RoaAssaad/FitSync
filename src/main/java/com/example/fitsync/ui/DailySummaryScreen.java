@@ -23,7 +23,7 @@ public class DailySummaryScreen {
     }
 
     public void start(Stage stage) {
-        boolean wasFullScreen = stage.isFullScreen(); // 🔒 remember fullscreen
+        boolean wasFullScreen = stage.isFullScreen(); //  remember fullscreen
 
         Label title = new Label("Your Daily Summary");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 24));

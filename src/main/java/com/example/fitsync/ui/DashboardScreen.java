@@ -21,7 +21,7 @@ public class DashboardScreen {
     public void start(Stage stage) {
         boolean wasFullScreen = stage.isFullScreen();
 
-        // 🟪 Menu Bar
+        //  Menu Bar
         MenuBar menuBar = new MenuBar();
 
         Menu fileMenu = new Menu("File");
@@ -54,12 +54,12 @@ public class DashboardScreen {
 
         menuBar.getMenus().addAll(fileMenu, aboutMenu);
 
-        // 🟦 Greeting
+        //  Greeting
         Label greeting = new Label("Welcome, " + user.getName() + "!");
         greeting.setFont(Font.font("Arial", FontWeight.BOLD, 22));
         greeting.setTextFill(Color.web("#2C3E50"));
 
-        // 📁 TabPane
+        // TabPane
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         tabPane.setPrefHeight(35); // skinnier tabs
@@ -74,7 +74,7 @@ public class DashboardScreen {
 
         tabPane.getTabs().addAll(mealsTab, workoutsTab, progressTab);
 
-        // ✅ Buttons per section
+        //  Buttons per section
         VBox mealsBox = new VBox(12,
                 createButton("Log Meal", () -> new LogMealScreen(user).start(stage)),
                 createButton("View Logged Meals", () -> new ViewMealsScreen(user).start(stage))

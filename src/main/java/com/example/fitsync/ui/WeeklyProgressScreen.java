@@ -24,7 +24,7 @@ public class WeeklyProgressScreen {
     }
 
     public void start(Stage stage) {
-        boolean wasFullScreen = stage.isFullScreen(); // 🔒 save fullscreen state
+        boolean wasFullScreen = stage.isFullScreen(); //  save fullscreen state
 
         CategoryAxis xAxis = new CategoryAxis();
         NumberAxis yAxis = new NumberAxis();
@@ -78,7 +78,7 @@ public class WeeklyProgressScreen {
         backButton.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
         backButton.setOnAction(e -> {
             new DashboardScreen(user).start(stage);
-            stage.setFullScreen(wasFullScreen); // 🔁 restore fullscreen after switching back
+            stage.setFullScreen(wasFullScreen); //  restore fullscreen after switching back
         });
 
         VBox layout = new VBox(20, barChart, backButton);

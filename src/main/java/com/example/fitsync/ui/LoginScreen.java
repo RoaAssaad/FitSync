@@ -109,7 +109,7 @@ public class LoginScreen {
         layout.prefWidthProperty().bind(stage.widthProperty());
         layout.prefHeightProperty().bind(stage.heightProperty());
 
-        Scene scene = new Scene(layout, 800, 600); // 💡 Default size avoids collapse
+        Scene scene = new Scene(layout, 800, 600); //  Default size avoids collapse
         stage.setTitle("FitSync - Login");
         stage.setScene(scene);
         stage.setFullScreen(wasFullScreen); // Restore fullscreen

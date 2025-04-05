@@ -25,7 +25,7 @@ public class TodayDashboardScreen {
     }
 
     public void start(Stage stage) {
-        boolean wasFullScreen = stage.isFullScreen(); // 🔒 remember fullscreen
+        boolean wasFullScreen = stage.isFullScreen(); //  remember fullscreen
         LocalDate today = LocalDate.now();
 
         Label title = new Label("Today at a Glance - " + today);

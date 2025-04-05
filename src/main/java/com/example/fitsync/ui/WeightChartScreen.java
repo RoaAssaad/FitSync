@@ -20,7 +20,7 @@ public class WeightChartScreen {
     }
 
     public void start(Stage stage) {
-        boolean wasFullScreen = stage.isFullScreen(); // 🔒 save fullscreen state
+        boolean wasFullScreen = stage.isFullScreen(); //  save fullscreen state
 
         CategoryAxis xAxis = new CategoryAxis();
         NumberAxis yAxis = new NumberAxis();
@@ -60,7 +60,7 @@ public class WeightChartScreen {
         backButton.setStyle("-fx-background-color: #3498DB; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;");
         backButton.setOnAction(e -> {
             new DashboardScreen(user).start(stage);
-            stage.setFullScreen(wasFullScreen); // 🔁 restore fullscreen
+            stage.setFullScreen(wasFullScreen); //  restore fullscreen
         });
 
         VBox layout = new VBox(20, chart, backButton);

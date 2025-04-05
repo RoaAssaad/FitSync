@@ -22,7 +22,7 @@ public class GoalScreen {
     }
 
     public void start(Stage stage) {
-        boolean wasFullScreen = stage.isFullScreen(); // 🔒 keep fullscreen state
+        boolean wasFullScreen = stage.isFullScreen(); // keep fullscreen state
 
         Label title = new Label("Set Daily Calorie Goals");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 22));
