@@ -6,6 +6,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -16,6 +18,11 @@ public class LoginScreen {
 
     public void start(Stage stage) {
         boolean wasFullScreen = stage.isFullScreen(); // Preserve fullscreen state
+
+        // 🔥 Add logo image
+        ImageView logo = new ImageView(new Image(getClass().getResourceAsStream("/images/fitsyncLogo.png")));
+        logo.setFitWidth(150);
+        logo.setPreserveRatio(true);
 
         Label title = new Label("FitSync - Login");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 24));
@@ -90,6 +97,7 @@ public class LoginScreen {
         });
 
         VBox form = new VBox(12,
+                logo,                        // 👈 logo goes here
                 title,
                 emailField,
                 passwordField,
@@ -109,10 +117,10 @@ public class LoginScreen {
         layout.prefWidthProperty().bind(stage.widthProperty());
         layout.prefHeightProperty().bind(stage.heightProperty());
 
-        Scene scene = new Scene(layout, 800, 600); //  Default size avoids collapse
+        Scene scene = new Scene(layout, 800, 600); // big enough to avoid startup squish
         stage.setTitle("FitSync - Login");
         stage.setScene(scene);
-        stage.setFullScreen(wasFullScreen); // Restore fullscreen
+        stage.setFullScreen(wasFullScreen);
         stage.show();
     }
 
