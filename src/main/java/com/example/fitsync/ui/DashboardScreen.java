@@ -5,6 +5,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -21,7 +23,7 @@ public class DashboardScreen {
     public void start(Stage stage) {
         boolean wasFullScreen = stage.isFullScreen();
 
-        //  Menu Bar
+        // Menu Bar
         MenuBar menuBar = new MenuBar();
 
         Menu fileMenu = new Menu("File");
@@ -39,22 +41,20 @@ public class DashboardScreen {
             alert.setTitle("About");
             alert.setHeaderText("FitSync Application");
             alert.setContentText(
-                    "FitSync helps users track meals, workouts, and monitor fitness progress.\n\n" +
+                    "FitSync helps users track meals, workouts, and monitor fitness progress.\n" +
                             "Developed by:\n" +
                             "• Roa Al Assaad\n" +
                             "• Michel Mitri\n\n" +
-                            "Supervised by:\n" +
-                            "Dr. Imad Zakhem\n\n"
-
+                            "Supervised by: \n" +
+                            "Dr. Imad Zakhem"
             );
-
             alert.showAndWait();
         });
         aboutMenu.getItems().add(aboutItem);
 
         menuBar.getMenus().addAll(fileMenu, aboutMenu);
 
-        //  Greeting
+        // Greeting
         Label greeting = new Label("Welcome, " + user.getName() + "!");
         greeting.setFont(Font.font("Arial", FontWeight.BOLD, 22));
         greeting.setTextFill(Color.web("#2C3E50"));
@@ -62,30 +62,37 @@ public class DashboardScreen {
         // TabPane
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        tabPane.setPrefHeight(35); // skinnier tabs
-        tabPane.setMinWidth(800); // make it stretch horizontally
+        tabPane.setPrefHeight(35);
+        tabPane.setMinWidth(800);
         tabPane.setMaxWidth(Double.MAX_VALUE);
         tabPane.setTabMinWidth(150);
 
-        // Tabs
         Tab mealsTab = new Tab("Meals");
         Tab workoutsTab = new Tab("Workouts");
         Tab progressTab = new Tab("Progress");
 
         tabPane.getTabs().addAll(mealsTab, workoutsTab, progressTab);
 
-        //  Buttons per section
+        // ImageViews
+        ImageView mealsImage = createTabImage("/images/Meals.png");
+        ImageView workoutsImage = createTabImage("/images/Workouts.png");
+        ImageView progressImage = createTabImage("/images/Progress.png");
+
+        // Buttons
         VBox mealsBox = new VBox(12,
+                mealsImage,
                 createButton("Log Meal", () -> new LogMealScreen(user).start(stage)),
                 createButton("View Logged Meals", () -> new ViewMealsScreen(user).start(stage))
         );
 
         VBox workoutsBox = new VBox(12,
+                workoutsImage,
                 createButton("Log Workout", () -> new LogWorkoutScreen(user).start(stage)),
                 createButton("Workout Recommendations", () -> new WorkoutRecommendationsScreen(user).start(stage))
         );
 
         VBox progressBox = new VBox(12,
+                progressImage,
                 createButton("View Daily Summary", () -> new DailySummaryScreen(user).start(stage)),
                 createButton("Today's Summary", () -> new TodayDashboardScreen(user).start(stage)),
                 createButton("Log Weight", () -> new LogWeightScreen(user).start(stage)),
@@ -100,17 +107,17 @@ public class DashboardScreen {
             box.setPadding(new Insets(30));
         }
 
-        // Assign dummy content (required by JavaFX)
+        // Placeholder content for JavaFX Tabs
         mealsTab.setContent(new Pane());
         workoutsTab.setContent(new Pane());
         progressTab.setContent(new Pane());
 
-        // Main layout
-        VBox centerButtons = new VBox(); // where we show current tab's buttons
+        // Main switching area
+        VBox centerButtons = new VBox();
         centerButtons.setAlignment(Pos.CENTER);
         centerButtons.setPadding(new Insets(10));
 
-        // Tab content switcher
+        // Tab switcher
         tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
             if (newTab == mealsTab) {
                 centerButtons.getChildren().setAll(mealsBox);
@@ -121,16 +128,14 @@ public class DashboardScreen {
             }
         });
 
-        // Trigger default tab programmatically
+        // Trigger default tab
         tabPane.getSelectionModel().select(mealsTab);
         centerButtons.getChildren().setAll(mealsBox);
 
-        // Header
         VBox header = new VBox(10, greeting, tabPane);
         header.setAlignment(Pos.CENTER);
         header.setPadding(new Insets(20, 0, 10, 0));
 
-        // Main container
         BorderPane layout = new BorderPane();
         layout.setTop(new VBox(menuBar, header));
         layout.setCenter(centerButtons);
@@ -138,7 +143,6 @@ public class DashboardScreen {
         layout.prefWidthProperty().bind(stage.widthProperty());
         layout.prefHeightProperty().bind(stage.heightProperty());
 
-        // Show stage
         Scene scene = new Scene(layout);
         stage.setScene(scene);
         stage.setTitle("FitSync - Dashboard");
@@ -154,5 +158,13 @@ public class DashboardScreen {
         btn.setStyle("-fx-background-color: #2ECC71; -fx-text-fill: white; -fx-background-radius: 10;");
         btn.setOnAction(e -> action.run());
         return btn;
+    }
+
+    private ImageView createTabImage(String resourcePath) {
+        Image img = new Image(getClass().getResourceAsStream(resourcePath));
+        ImageView imgView = new ImageView(img);
+        imgView.setFitHeight(170);
+        imgView.setPreserveRatio(true);
+        return imgView;
     }
 }

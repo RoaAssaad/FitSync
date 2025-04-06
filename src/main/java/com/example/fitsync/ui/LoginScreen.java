@@ -19,7 +19,7 @@ public class LoginScreen {
     public void start(Stage stage) {
         boolean wasFullScreen = stage.isFullScreen(); // Preserve fullscreen state
 
-        // 🔥 Add logo image
+        // Add logo image
         ImageView logo = new ImageView(new Image(getClass().getResourceAsStream("/images/fitsyncLogo.png")));
         logo.setFitWidth(150);
         logo.setPreserveRatio(true);
@@ -97,7 +97,7 @@ public class LoginScreen {
         });
 
         VBox form = new VBox(12,
-                logo,                        // 👈 logo goes here
+                logo,                        //  logo goes here
                 title,
                 emailField,
                 passwordField,
