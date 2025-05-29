@@ -29,4 +29,4 @@
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/fitsync-javafx.git
+   git clone https://github.com/RoaAssaad/FitSync.git
