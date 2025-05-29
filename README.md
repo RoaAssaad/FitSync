@@ -1,4 +1,4 @@
-# 💪🥗🔥 FitSync – JavaFX Fitness Tracker
+# FitSync – JavaFX Fitness Tracker
 
 **FitSync** is a desktop fitness tracking application built with **JavaFX** and **JDBC**, backed by a **MySQL** database. It enables users to log meals and workouts, monitor calories in vs. out, track weight over time, and receive personalized workout recommendations.
 
